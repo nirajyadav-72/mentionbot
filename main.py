@@ -158,8 +158,13 @@ async def handle_text_and_tags(client, message):
         return
 
     chat_id = message.chat.id
-    chat_type = message.chat.type.name
+    chat_type = message.chat.type  # Enum ऑब्जेक्ट सुरक्षित तरीके से लिया
     user = message.from_user
+    
+    # Anonymous admin या Channel post के केस में सुरक्षा चेक
+    if not user:
+        return
+
     message_text = message.text.strip().lower()
 
     is_scrape_trigger = message_text == "@scrape"
@@ -167,15 +172,15 @@ async def handle_text_and_tags(client, message):
     is_admin_trigger = message_text.startswith("@admin") or message_text.startswith("@admins")
 
     if is_scrape_trigger or is_tagall_trigger or is_admin_trigger:
-        # 📌 सुरक्षा चेक: प्राइवेट चैट वार्निंग
-        if chat_type == "PRIVATE":
+        # 📌 सुरक्षा चेक: प्राइवेट चैट वार्निंग (Enum आधारित चेक)
+        if chat_type == enums.ChatType.PRIVATE:
             await message.reply_text("❌ **कृपया इस कमांड का उपयोग केवल टेलीग्राम ग्रुप में करें!** Private चैट में टैगिंग काम नहीं करती है।")
             return
 
         # एडमिन वेरिफिकेशन चेक
         is_admin = False
         try:
-            async for admin in client.get_chat_members(chat_id, filter="administrators"):
+            async for admin in client.get_chat_members(chat_id, filter=enums.ChatMembersFilter.ADMINISTRATORS):
                 if admin.user.id == user.id:
                     is_admin = True
                     break
@@ -193,7 +198,7 @@ async def handle_text_and_tags(client, message):
             count = 0
             try:
                 async for member in client.get_chat_members(chat_id):
-                    if not member.user.is_bot:
+                    if member.user and not member.user.is_bot:
                         save_member(chat_id, member.user.id, member.user.first_name)
                         count += 1
                 await status_msg.edit_text(f"✅ **सफलतापूर्वक लोड पूरा हुआ!**\n\n🎯 कुल `{count}` पुराने और नए मेंबर्स को डेटाबेस में सेव कर लिया गया है। अब आप `@all` कमांड का उपयोग कर सकते हैं।")
@@ -221,12 +226,12 @@ async def handle_text_and_tags(client, message):
                 safe_name = f_name.replace('[', '').replace(']', '').replace('(', '').replace(')', '')
                 current_text += f"[{safe_name}](tg://user?id={u_id}) "
                 msg_count += 1
-                if msg_count >= 40:
-                    await client.send_message(chat_id=chat_id, text=current_text)
-                    current_text = ""
+                if msg_count >= 40:  # 40 मेंबर्स के बाद नया मैसेज भेजना
+                    await client.send_message(chat_id=chat_id, text=current_text, parse_mode=enums.ParseMode.MARKDOWN)
+                    current_text = base_text # बेस टेक्स्ट को रीसेट पर भी बनाए रखें ताकि संदर्भ न खोए
                     msg_count = 0
-            if current_text:
-                await client.send_message(chat_id=chat_id, text=current_text)
+            if current_text and current_text != base_text:
+                await client.send_message(chat_id=chat_id, text=current_text, parse_mode=enums.ParseMode.MARKDOWN)
 
         # 3. @admin या @admins प्रोसेसिंग
         elif is_admin_trigger:
@@ -238,17 +243,18 @@ async def handle_text_and_tags(client, message):
                 user_msg = user_msg.strip()
 
                 text = f"⚠️ **एडमिन अलर्ट!**\n{user_msg}\n\n" if user_msg else "⚠️ **ग्रुप एडमिन्स ध्यान दें:**\n\n"
-                async for admin in client.get_chat_members(chat_id, filter="administrators"):
-                    if not admin.user.is_bot:
+                async for admin in client.get_chat_members(chat_id, filter=enums.ChatMembersFilter.ADMINISTRATORS):
+                    if admin.user and not admin.user.is_bot:
                         safe_name = admin.user.first_name.replace('[', '').replace(']', '').replace('(', '').replace(')', '')
                         text += f"[{safe_name}](tg://user?id={admin.user.id}) "
-                await message.reply_text(text, parse_mode="Markdown")
+                await message.reply_text(text, parse_mode=enums.ParseMode.MARKDOWN)
             except Exception as e:
                 logger.error(f"Error in tag_admins: {e}")
 
-    # सामान्य मैसेज आने पर ग्रुप यूजर को डेटाबेस में ऑटो-सेव करना
-    elif chat_type in ["GROUP", "SUPERGROUP"] and user and not user.is_bot:
+    # सामान्य मैसेज आने पर ग्रुप यूजर को डेटाबेस में ऑटो-सेव करना (Enum का सही उपयोग)
+    elif chat_type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP] and not user.is_bot:
         save_member(chat_id, user.id, user.first_name)
+        
 
 @app.on_message(filters.new_chat_members)
 async def welcome_and_bot_add(client, message):
