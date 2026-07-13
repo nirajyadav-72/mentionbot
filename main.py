@@ -100,7 +100,7 @@ async def start_command(client, message):
                 f"• सभी कमांड्स जानने के लिए `/help` टाइप करें।"
             )
             keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("➕ Add Me To Your Group ➕", url=add_url)]])
-            await message.reply_text(owner_welcome, reply_markup=keyboard, parse_mode="Markdown")
+            await message.reply_text(owner_welcome, reply_markup=keyboard, parse_mode="markdown")
         else:
             user_welcome = (
                 f"👋 **हेलो {user.first_name}!**\n\n"
@@ -114,7 +114,7 @@ async def start_command(client, message):
             keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("➕ Add Me To Your Group ➕", url=add_url)]])
             await message.reply_text(user_welcome, reply_markup=keyboard, parse_mode="markdown")
     else:
-        await message.reply_text(f"🤖 **बॉट एक्टिव है!**", parse_mode="Markdown")
+        await message.reply_text(f"🤖 **बॉट एक्टिव है!**", parse_mode="markdown")
 
 @app.on_message(filters.command("help"))
 async def help_command(client, message):
@@ -149,7 +149,7 @@ async def help_command(client, message):
         buttons.append([InlineKeyboardButton("👨‍💻 Contact Owner", url=owner_chat_url)])
         
     reply_markup = InlineKeyboardMarkup(buttons)
-    await message.reply_text(help_text, reply_markup=reply_markup, parse_mode="Markdown")
+    await message.reply_text(help_text, reply_markup=reply_markup, parse_mode="markdown")
 
 @app.on_message(filters.text)
 async def handle_text_and_tags(client, message):
