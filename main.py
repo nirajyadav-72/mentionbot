@@ -88,7 +88,7 @@ async def start_command(client, message):
     user = message.from_user
     chat_type = message.chat.type.name
     bot_user = await client.get_me()
-    add_url = f"https://t.me{bot_user.username}?startgroup=true"
+    add_url = f"https://t.me/{bot_user.username}?startgroup=true"
 
     if chat_type == "PRIVATE":
         if user.id == OWNER_ID:
@@ -141,7 +141,7 @@ async def help_command(client, message):
         )
 
     buttons = []
-    add_url = f"https://t.me{bot_user.username}?startgroup=true"
+    add_url = f"https://t.me/{bot_user.username}?startgroup=true"
     buttons.append([InlineKeyboardButton("➕ Add Me To Your Group ➕", url=add_url)])
     
     if OWNER_ID:
@@ -264,7 +264,7 @@ async def welcome_and_bot_add(client, message):
                 f"🤖 मैं इस ग्रुप के सभी मेंबर्स को टैग करने में आपकी मदद करूँगा।\n\n"
                 f"⚙️ **महत्वपूर्ण:** कृपया मुझे ग्रुप में **Admin** बनाएं ताकि पुराने मेंबर्स को लोड करने के लिए `@scrape` कमांड काम कर सके!"
             )
-            add_url = f"https://t.me{bot_user.username}?startgroup=true"
+            add_url = f"https://t.me/{bot_user.username}?startgroup=true"
             keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("➕ Add Me To Your Group ➕", url=add_url)]])
             await message.reply_text(thanks_text, reply_markup=keyboard, parse_mode="Markdown")
             return
