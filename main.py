@@ -151,7 +151,7 @@ async def help_command(client, message):
     reply_markup = InlineKeyboardMarkup(buttons)
     await message.reply_text(help_text, reply_markup=reply_markup, parse_mode="Markdown")
 
-  @app.on_message(filters.text)
+@app.on_message(filters.text)
 async def handle_text_and_tags(client, message):
     """ग्रुप टेक्स्ट स्कैन करना, टैगिंग संभालना और प्राइवेट चैट में वार्निंग देना"""
     if not message.text:
