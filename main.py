@@ -127,6 +127,11 @@ async def start_command(client, message):
 async def help_command(client, message):
     """/help - हेल्प मेनू और ओनर बटन"""
     user = message.from_user
+    
+    # 📌 सुरक्षा चेक: अगर मैसेज भेजने वाला यूजर उपलब्ध नहीं है
+    if not user:
+        return
+        
     bot_user = await client.get_me()
     
     help_text = (
@@ -140,6 +145,7 @@ async def help_command(client, message):
         f"• `/help` - हेल्प मैनुअल देखने के लिए।"
     )
 
+    # ओनर चेक अब सुरक्षित है क्योंकि 'user' की जांच ऊपर हो चुकी है
     if user.id == OWNER_ID:
         help_text += (
             f"\n\n👑 **ओनर स्पेशल कमांड्स:**\n"
@@ -156,8 +162,10 @@ async def help_command(client, message):
         buttons.append([InlineKeyboardButton("👨‍💻 Contact Owner", url=owner_chat_url)])
         
     reply_markup = InlineKeyboardMarkup(buttons)
-    await message.reply_text(help_text, reply_markup=reply_markup, parse_mode="markdown")
-
+    
+    # parse_mode को Pyrogram के नवीनतम मानक (Enum) में बदला गया
+    await message.reply_text(help_text, reply_markup=reply_markup, parse_mode=enums.ParseMode.MARKDOWN)
+    
 @app.on_message(filters.text)
 async def handle_text_and_tags(client, message):
     """ग्रुप टेक्स्ट स्कैन करना, टैगिंग संभालना और प्राइवेट चैट में वार्निंग देना"""
