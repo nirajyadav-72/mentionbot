@@ -86,11 +86,17 @@ app = Client("mention_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKE
 async def start_command(client, message):
     """/start - यूजर और ओनर के लिए बटन के साथ वेलकम मैसेज"""
     user = message.from_user
-    chat_type = message.chat.type.name
+    
+    # सुरक्षा चेक: अगर मैसेज बिना यूजर के है (जैसे चैनल पोस्ट)
+    if not user:
+        return
+        
+    chat_type = message.chat.type
     bot_user = await client.get_me()
     add_url = f"https://t.me/{bot_user.username}?startgroup=true"
 
-    if chat_type == "PRIVATE":
+    # Pyrogram Enum का सही उपयोग करके प्राइवेट चैट चेक करना
+    if chat_type == enums.ChatType.PRIVATE:
         if user.id == OWNER_ID:
             owner_welcome = (
                 f"👋 **नमस्ते बॉस, आपका स्वागत है!**\n\n"
@@ -100,7 +106,7 @@ async def start_command(client, message):
                 f"• सभी कमांड्स जानने के लिए `/help` टाइप करें।"
             )
             keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("➕ Add Me To Your Group ➕", url=add_url)]])
-            await message.reply_text(owner_welcome, reply_markup=keyboard, parse_mode="markdown")
+            await message.reply_text(owner_welcome, reply_markup=keyboard, parse_mode=enums.ParseMode.MARKDOWN)
         else:
             user_welcome = (
                 f"👋 **हेलो {user.first_name}!**\n\n"
@@ -112,10 +118,11 @@ async def start_command(client, message):
                 f"• पूरी जानकारी के लिए `/help` टाइप करें।"
             )
             keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("➕ Add Me To Your Group ➕", url=add_url)]])
-            await message.reply_text(user_welcome, reply_markup=keyboard, parse_mode="markdown")
+            await message.reply_text(user_welcome, reply_markup=keyboard, parse_mode=enums.ParseMode.MARKDOWN)
     else:
-        await message.reply_text(f"🤖 **बॉट एक्टिव है!**", parse_mode="markdown")
-
+        # ग्रुप के लिए सही रिप्लाई
+        await message.reply_text(f"🤖 **बॉट एक्टिव है!**", parse_mode=enums.ParseMode.MARKDOWN)
+        
 @app.on_message(filters.command("help"))
 async def help_command(client, message):
     """/help - हेल्प मेनू और ओनर बटन"""
