@@ -1,7 +1,7 @@
 import os
 import logging
 import sqlite3
-from pyrogram import Client, filters
+from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
 
@@ -112,7 +112,7 @@ async def start_command(client, message):
                 f"• पूरी जानकारी के लिए `/help` टाइप करें।"
             )
             keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("➕ Add Me To Your Group ➕", url=add_url)]])
-            await message.reply_text(user_welcome, reply_markup=keyboard, parse_mode="Markdown")
+            await message.reply_text(user_welcome, reply_markup=keyboard, parse_mode="markdown")
     else:
         await message.reply_text(f"🤖 **बॉट एक्टिव है!**", parse_mode="Markdown")
 
@@ -272,7 +272,7 @@ async def welcome_and_bot_add(client, message):
             )
             add_url = f"https://t.me/{bot_user.username}?startgroup=true"
             keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("➕ Add Me To Your Group ➕", url=add_url)]])
-            await message.reply_text(thanks_text, reply_markup=keyboard, parse_mode="Markdown")
+            await message.reply_text(thanks_text, reply_markup=keyboard, parse_mode="markdown")
             return
 
         if not new_member.is_bot:
